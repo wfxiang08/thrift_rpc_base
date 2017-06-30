@@ -7,13 +7,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/wfxiang08/go_thrift/thrift"
-	"github.com/wfxiang08/thrift_rpc_base/rpc_thrift"
 	"math"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"github.com/wfxiang08/thrift_rpc_base/rpc_thrift/services"
 )
 
 func Usage() {
