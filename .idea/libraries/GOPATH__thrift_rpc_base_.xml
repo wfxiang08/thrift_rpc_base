@@ -1,0 +1,35 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;thrift_rpc_base&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../../golang.org" />
+      <root url="file://$PROJECT_DIR$/../../../aurora" />
+      <root url="file://$PROJECT_DIR$/../.." />
+      <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
+      <root url="file://$PROJECT_DIR$/../../../willnorris.com" />
+      <root url="file://$PROJECT_DIR$/../../../git.chunyu.me" />
+      <root url="file://$PROJECT_DIR$/../../../k8s.io" />
+      <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../../../glide" />
+      <root url="file://$PROJECT_DIR$/../../../imageproxy" />
+      <root url="file://$PROJECT_DIR$/../../../google.golang.org" />
+      <root url="file://$PROJECT_DIR$/../../../launchpad.net" />
+    </CLASSES>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../../golang.org" />
+      <root url="file://$PROJECT_DIR$/../../../aurora" />
+      <root url="file://$PROJECT_DIR$/../.." />
+      <root url="file://$PROJECT_DIR$/../../../bitbucket.org" />
+      <root url="file://$PROJECT_DIR$/../../../willnorris.com" />
+      <root url="file://$PROJECT_DIR$/../../../git.chunyu.me" />
+      <root url="file://$PROJECT_DIR$/../../../k8s.io" />
+      <root url="file://$PROJECT_DIR$/../../../gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../../../glide" />
+      <root url="file://$PROJECT_DIR$/../../../imageproxy" />
+      <root url="file://$PROJECT_DIR$/../../../google.golang.org" />
+      <root url="file://$PROJECT_DIR$/../../../launchpad.net" />
+    </SOURCES>
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+    </excluded>
+  </library>
+</component>
