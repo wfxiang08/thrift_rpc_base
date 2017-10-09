@@ -54,7 +54,6 @@ var (
 //  }
 //
 type Pool struct {
-
 	// Dial is an application supplied function for creating and configuring a
 	// connection.
 	//
@@ -281,12 +280,27 @@ type errorConnection struct {
 	err error
 }
 
-func (this *errorConnection) Open() error                       { return this.err }
-func (this *errorConnection) IsOpen() bool                      { return false }
-func (this *errorConnection) Read(p []byte) (n int, err error)  { return 0, this.err }
-func (this *errorConnection) Close() error                      { return this.err }
-func (this *errorConnection) Write(p []byte) (n int, err error) { return 0, this.err }
-func (this *errorConnection) Flush() (err error)                { return this.err }
+func (this *errorConnection) RemainingBytes() (num_bytes uint64) {
+	return 0
+}
+func (this *errorConnection) Open() error {
+	return this.err
+}
+func (this *errorConnection) IsOpen() bool {
+	return false
+}
+func (this *errorConnection) Read(p []byte) (n int, err error) {
+	return 0, this.err
+}
+func (this *errorConnection) Close() error {
+	return this.err
+}
+func (this *errorConnection) Write(p []byte) (n int, err error) {
+	return 0, this.err
+}
+func (this *errorConnection) Flush() (err error) {
+	return this.err
+}
 
 func GetProtocolFromTransport(transport thrift.TTransport, serviceName string) (ip thrift.TProtocol, op thrift.TProtocol) {
 	op = thrift.NewTMultiplexedProtocol(thrift.NewTBinaryProtocol(transport, false, true), serviceName)
