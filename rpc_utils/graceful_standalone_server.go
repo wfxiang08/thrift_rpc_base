@@ -61,7 +61,6 @@ func processSession(c thrift.TTransport, processor thrift.TProcessor) {
 		// 总结:
 		// 1. 返回false, 表示io过程出现异常，必须断开连接; err总是存在
 		// 2. 返回true, 表示io没有异常，可以继续使用connection; 返回未知的异常，或为0
-		//
 		if ok {
 			if err != nil {
 				log.ErrorErrorf(err, "Unexpected exception found from service")
@@ -71,10 +70,6 @@ func processSession(c thrift.TTransport, processor thrift.TProcessor) {
 			if err, ok := err.(thrift.TTransportException); ok && (err.TypeId() == thrift.END_OF_FILE ||
 				strings.Contains(err.Error(), "use of closed network connection")) {
 				// 正常的断开，不打日志
-				return
-			} else if err != nil {
-				// 其他链路问题，直接报错，退出
-				log.ErrorErrorf(err, "Error processing request, quit")
 				return
 			}
 
