@@ -40,6 +40,46 @@ func (p *TGracefulServerSocket) Accept() (thrift.TTransport, error) {
 	return thrift.NewTSocketFromConnTimeout(conn, p.clientTimeout), nil
 }
 
+func processSession(c thrift.TTransport, processor thrift.TProcessor) {
+	// 1. 打印异常信息
+	defer func() {
+		c.Close()
+		if e := recover(); e != nil {
+			log.Errorf("panic in processor: %v: %s", e, debug.Stack())
+		}
+	}()
+
+	// 2. 注意协议类型: TBinaryProtocol & TFramedTransport
+	ip := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
+	op := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
+
+	for {
+		defaultContext := context.Background()
+		// 3. 循环处理每一个请求
+		ok, err := processor.Process(defaultContext, ip, op)
+
+		// 总结:
+		// 1. 返回false, 表示io过程出现异常，必须断开连接; err总是存在
+		// 2. 返回true, 表示io没有异常，可以继续使用connection; 返回未知的异常，或为0
+		if ok {
+			if err != nil {
+				log.ErrorErrorf(err, "Unexpected exception found from service")
+			}
+		} else {
+			// ok == false, 如果链路出现异常（必须结束)
+			if err, ok := err.(thrift.TTransportException); ok && (err.TypeId() == thrift.END_OF_FILE ||
+				strings.Contains(err.Error(), "use of closed network connection")) {
+				// 正常的断开，不打日志
+				return
+			}
+
+			// 其他错误
+			log.ErrorErrorf(err, "Error processing request")
+			return
+		}
+	}
+}
+
 func GracefulRunWithListener(listener net.Listener, processor thrift.TProcessor) {
 	// 将listener包装成为transport
 	transport := NewTGracefulServerSocket(listener)
@@ -48,59 +88,8 @@ func GracefulRunWithListener(listener net.Listener, processor thrift.TProcessor)
 
 	go func() {
 		for c := range ch {
-			go func(c thrift.TTransport) {
-				// 1. 打印异常信息
-				defer func() {
-					c.Close()
-					if e := recover(); e != nil {
-						log.Errorf("panic in processor: %v: %s", e, debug.Stack())
-					}
-				}()
-
-				// 2. 注意协议类型: TBinaryProtocol & TFramedTransport
-				ip := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
-				op := thrift.NewTBinaryProtocolTransport(thrift.NewTFramedTransport(c))
-
-				for {
-					defaultContext := context.Background()
-					// 3. 循环处理每一个请求
-					ok, err := processor.Process(defaultContext, ip, op)
-
-					if err != nil {
-						// 如果链路出现异常（必须结束)
-						if err, ok := err.(thrift.TTransportException); ok && (err.TypeId() == thrift.END_OF_FILE ||
-							strings.Contains(err.Error(), "use of closed network connection")) {
-							return
-						} else if err != nil {
-							// 其他链路问题，直接报错，退出
-							log.ErrorErrorf(err, "Error processing request, quit")
-							return
-						}
-
-						// 如果是方法未知，则直接报错，然后跳过
-						if err, ok := err.(thrift.TApplicationException); ok && err.TypeId() == thrift.UNKNOWN_METHOD {
-							log.ErrorErrorf(err, "Error processing request, continue")
-							return
-						}
-
-						log.ErrorErrorf(err, "Error processing request")
-						// INTERNAL_ERROR --> ok: true 可以继续
-						// PROTOCOL_ERROR --> ok: false
-						// 非业务的错误都终止当前的连接
-						return
-					}
-
-					// 其他情况下，ok == false，意味io过程中存在读写错误，connection上存在脏数据
-					// 用户自定义的异常，必须继承自: *services.RpcException, 否则整个流程就容易出现问题
-					if !ok {
-						if err == nil {
-							log.Printf("Process Not OK, stopped")
-						}
-						break
-					}
-
-				}
-			}(c) // c必须通过参数传递给go func, 不能在内部直接访问(否则异步请求看到的会有问题)
+			// c必须通过参数传递给go func, 不能在内部直接访问(否则异步请求看到的会有问题)
+			go processSession(c, processor)
 		}
 	}()
 
